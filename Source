@@ -1,0 +1,133 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local CoreGui = game:GetService("CoreGui")
+
+local screenGui = Instance.new("ScreenGui", CoreGui)
+screenGui.Name = "KeyAndLoadingScreen"
+
+local keyInputFrame = Instance.new("Frame", screenGui)
+keyInputFrame.Size = UDim2.new(0.4, 0, 0.4, 0)
+keyInputFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
+keyInputFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+keyInputFrame.BorderSizePixel = 0
+
+local keyTextBox = Instance.new("TextBox", keyInputFrame)
+keyTextBox.Size = UDim2.new(0.8, 0, 0.2, 0)
+keyTextBox.Position = UDim2.new(0.1, 0, 0.1, 0)
+keyTextBox.PlaceholderText = "Enter Key"
+keyTextBox.Text = ""
+keyTextBox.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+keyTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+local checkKeyButton = Instance.new("TextButton", keyInputFrame)
+checkKeyButton.Size = UDim2.new(0.8, 0, 0.2, 0)
+checkKeyButton.Position = UDim2.new(0.1, 0, 0.4, 0)
+checkKeyButton.Text = "Check Key"
+checkKeyButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+checkKeyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+checkKeyButton.BorderSizePixel = 0
+
+local copyKeyButton = Instance.new("TextButton", keyInputFrame)
+copyKeyButton.Size = UDim2.new(0.8, 0, 0.2, 0)
+copyKeyButton.Position = UDim2.new(0.1, 0, 0.7, 0)
+copyKeyButton.Text = "Copy Key"
+copyKeyButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+copyKeyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+copyKeyButton.BorderSizePixel = 0
+
+local function generateRandomKey()
+    local chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+    local key = ""
+    for i = 1, 12 do
+        local rand = math.random(1, #chars)
+        key = key .. chars:sub(rand, rand)
+    end
+    return key
+end
+
+local correctKey = generateRandomKey()
+
+local function createLoadingScreen()
+    local loadingScreenGui = Instance.new("ScreenGui", CoreGui)
+    loadingScreenGui.Name = "BypassLoadingScreen"
+    loadingScreenGui.ResetOnSpawn = false
+    loadingScreenGui.IgnoreGuiInset = true
+    loadingScreenGui.DisplayOrder = 10000
+
+    local blackout = Instance.new("Frame", loadingScreenGui)
+    blackout.Size = UDim2.new(1, 0, 1, 0)
+    blackout.Position = UDim2.new(0, 0, 0, 0)
+    blackout.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    blackout.BorderSizePixel = 0
+
+    local loadingText = Instance.new("TextLabel", blackout)
+    loadingText.Size = UDim2.new(1, 0, 0.1, 0)
+    loadingText.Position = UDim2.new(0, 0, 0.4, 0)
+    loadingText.Text = "BYPASSING GAME ANTI CHEAT PLEASE WAIT"
+    loadingText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    loadingText.BackgroundTransparency = 1
+    loadingText.TextScaled = true
+    loadingText.Font = Enum.Font.SourceSansBold
+
+    local barContainer = Instance.new("Frame", blackout)
+    barContainer.Size = UDim2.new(0.6, 0, 0.03, 0)
+    barContainer.Position = UDim2.new(0.2, 0, 0.5, 0)
+    barContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    barContainer.BorderSizePixel = 0
+    barContainer.ClipsDescendants = true
+
+    local barFill = Instance.new("Frame", barContainer)
+    barFill.Size = UDim2.new(0, 0, 1, 0)
+    barFill.Position = UDim2.new(0, 0, 0, 0)
+    barFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    barFill.BorderSizePixel = 0
+
+    local percentText = Instance.new("TextLabel", blackout)
+    percentText.Size = UDim2.new(1, 0, 0.05, 0)
+    percentText.Position = UDim2.new(0, 0, 0.55, 0)
+    percentText.Text = "0%"
+    percentText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    percentText.BackgroundTransparency = 1
+    percentText.TextScaled = true
+    percentText.Font = Enum.Font.SourceSansBold
+
+    local blockClicks = Instance.new("Frame", loadingScreenGui)
+    blockClicks.Size = UDim2.new(1, 0, 1, 0)
+    blockClicks.Position = UDim2.new(0, 0, 0, 0)
+    blockClicks.BackgroundTransparency = 1
+    blockClicks.ZIndex = 10000
+    blockClicks.Active = true
+
+    local duration = 180
+    for i = 0, duration do
+        local progress = i / duration
+        barFill.Size = UDim2.new(progress, 0, 1, 0)
+        percentText.Text = math.floor(progress * 100) .. "%"
+        wait(1)
+    end
+end
+
+checkKeyButton.MouseButton1Click:Connect(
+    function()
+        if keyTextBox.Text == correctKey then
+            keyTextBox.Text = correctKey
+            checkKeyButton.Text = "Correct Key"
+            wait(1)
+            screenGui:Destroy()
+            createLoadingScreen()
+        else
+            checkKeyButton.Text = "Incorrect Key"
+            wait(1)
+            checkKeyButton.Text = "Check Key"
+        end
+    end
+)
+
+copyKeyButton.MouseButton1Click:Connect(
+    function()
+        setclipboard(correctKey)
+        copyKeyButton.Text = "Key Copied"
+        wait(1)
+        copyKeyButton.Text = "Copy Key"
+    end
+)
